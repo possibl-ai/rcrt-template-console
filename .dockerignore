@@ -1,0 +1,15 @@
+.git
+.github
+.gitignore
+.dockerignore
+README.md
+LICENSE
+node_modules/
+dist/
+*.log
+.DS_Store
+.env
+.env.local
+.env.production
+# NOTE: vendor/ is intentionally NOT ignored — the Dockerfile copies it before
+# `npm install` so the file: tarball deps resolve in Cloud Build.

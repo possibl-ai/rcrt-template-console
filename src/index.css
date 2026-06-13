@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Neutral console theme — premium dark canvas + a single indigo accent.
+     Rebrand by editing these tokens (and the --rcrt-* block below); never by
+     forking kit components. */
+  :root {
+    --background: 222 14% 7%;
+    --foreground: 210 20% 98%;
+    --card: 222 13% 10%;
+    --card-foreground: 210 20% 98%;
+    --popover: 222 13% 9%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 12% 16%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 222 12% 15%;
+    --muted-foreground: 217 10% 65%;
+    --accent: 243 75% 59%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 12% 18%;
+    --input: 222 12% 18%;
+    --ring: 243 75% 59%;
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --radius: 0.7rem;
+  }
+
+  /* @possibl/rcrt-app-kit shell/advisor + @possibl/rcrt-ui chat are token-driven
+     (--rcrt-*). Map them onto the same neutral palette so the kit-rendered nav
+     rail, advisor dock, spotlight and chat match the app brand. Imported AFTER
+     the kit's styles.css (see main.tsx) so these overrides win. */
+  :root {
+    --rcrt-bg: hsl(222 14% 7%);
+    --rcrt-fg: hsl(210 20% 98%);
+    --rcrt-card: hsl(222 13% 10%);
+    --rcrt-card-fg: hsl(210 20% 98%);
+    --rcrt-popover: hsl(222 13% 9%);
+    --rcrt-secondary: hsl(222 12% 16%);
+    --rcrt-muted: hsl(222 12% 15%);
+    --rcrt-muted-fg: hsl(217 10% 65%);
+    --rcrt-border: hsl(222 12% 18%);
+    --rcrt-input: hsl(222 12% 18%);
+    --rcrt-accent: hsl(243 75% 59%);
+    --rcrt-accent-fg: hsl(0 0% 100%);
+    --rcrt-accent-2: hsl(263 70% 63%);
+    --rcrt-gradient: linear-gradient(135deg, hsl(243 75% 59%), hsl(263 70% 63%));
+    --rcrt-radius: 0.7rem;
+  }
+
+  /* Minimal text input matched to the kit tokens (the kit ships no form input
+     primitive). Used by the example form in src/sections/Items.tsx. */
+  .rcrt-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--rcrt-radius, 0.7rem);
+    background: var(--rcrt-input);
+    color: var(--rcrt-fg);
+    border: 1px solid var(--rcrt-border);
+    font: inherit;
+    outline: none;
+  }
+  .rcrt-input:focus {
+    border-color: var(--rcrt-accent);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
