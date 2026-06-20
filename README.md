@@ -23,18 +23,20 @@ You author **an app definition** plus your **domain components**. That's it.
 src/
   app.config.tsx        ← THE APP: defineApp({ sections, advisor, branding }) — pure config
   sections/
-    Home.tsx            ← a dashboard section (domain component + anchors)
-    Items.tsx           ← a collection list + a prefillable form + a nested record route
+    Home.tsx            ← a dashboard section (stat cards + a delightful, actionable empty state)
+    Items.tsx           ← a collection with tabs + a prefillable form + a nested record route
     ItemRecord.tsx      ← the record route body (/items/:id, full-bleed/chromeless)
-    Settings.tsx        ← a tiny bottom-pinned section
+    Settings.tsx        ← a persisted SINGLETON settings form (upsertByName) + sample-data controls
   lib/
     schemas.ts          ← defineSchema handles (your breadcrumb shapes) — no database
+    sample-data.ts      ← copyable seed/clear pattern (so a new app looks alive on first load)
     api-client.ts       ← the one @possibl/rcrt-sdk client (auth seam)
     auth.tsx            ← Firebase TokenProvider (or API-key "key mode")
     cache.ts            ← the SWR snapshot store
     advisor-chat.tsx    ← @possibl/rcrt-ui <Chat> wired into the advisor dock
   App.tsx               ← auth gate + providers + <RcrtApp app={consoleApp} />
   main.tsx              ← entry: styles, widget registration, <AuthProvider>
+AGENTS.md               ← builder-facing guide (TOUCH/CONFIG/LEAVE, ALWAYS/NEVER, recipes)
 index.html, vite.config.ts, Dockerfile, nginx.conf, cloudbuild.yaml, .env  ← scaffold (never edited)
 ```
 
@@ -86,10 +88,32 @@ inherited and any reimplementation will drift.
 | Cache chrome (refresh, UpdatedAgo, error banner) | `SectionPage cache={…}` |
 | Anchors as components (no string drift) | `defineAnchor` → `anchors.x.Anchor` |
 
-This template demonstrates: a dashboard section, a collection list with a
-prefillable **form**, a deep-linkable **record route** (`/items/:id`) that is a
-**chromeless** full-bleed takeover, multi-block nav (`navSlot: top/bottom`), and
+This template demonstrates: a dashboard section, a collection with **tabs**
+(`All`/`Open`/`Done`, mapped to `?tab=` by the shell) and a prefillable **form**,
+a deep-linkable **record route** (`/items/:id`) that is a **chromeless**
+full-bleed takeover, a persisted **singleton settings** form (`upsertByName`),
+multi-block nav (`navSlot: top/bottom`), advisor **actions** in the manifest, and
 the advisor rendered through `@possibl/rcrt-ui`'s `<Chat>`.
+
+## Sample data (a new app should never open empty)
+
+`src/lib/sample-data.ts` is the **copyable seeding pattern**: it creates a handful
+of `interpret:item` breadcrumbs stamped with a marker tag (`sample:seed`), is
+idempotent (won't double-seed), and is reached from an empty-state **"Load sample
+data"** button on Home and Items (never auto-seeded on boot). `clearSampleItems`
+removes only the marked rows. Copy this pattern for every new collection so the
+dashboard and the advisor have real data to work with from the first render.
+
+## App Control: how the `interpret:ui-manifest` publishes
+
+`<RcrtApp>` publishes the manifest on boot, hash-idempotently, to
+**`client.forTenant(VITE_TENANT_ID)`** — the workspace tenant. The manifest is
+*derived* from the registry (routes + anchors + forms + `advisor.actions`), so to
+change what the advisor can see or do, change `app.config.tsx` / the sections —
+never hand-write a manifest. Publication is **client-side and lazy**: it happens
+when the deployed app is opened in a browser with a valid `VITE_TENANT_ID` and
+working auth. After deploy, **open (or preview) the app once** so the manifest
+lands in the workspace tenant.
 
 ## Develop
 
@@ -122,9 +146,13 @@ from `vendor/*.tgz` (`file:` deps) until they are published to npm. The
 resolve in Cloud Build (skipping this caused a deploy failure in the dogfood
 console — see its commit `67ecc42`).
 
+Current vendored versions: `@possibl/rcrt-app-kit@0.3.0`, `@possibl/rcrt-sdk@0.4.0`,
+`@possibl/rcrt-ui@0.3.0` (aligned with the native template, which shares app-kit
+0.3.0 + sdk 0.4.0).
+
 **Once the packages are published**, in `package.json` replace each
-`file:vendor/...tgz` with a registry semver range (e.g. `"^0.2.0"`) and delete
-`vendor/`. Nothing else changes.
+`file:vendor/...tgz` with a registry semver range (e.g.
+`"@possibl/rcrt-app-kit": "^0.3.0"`) and delete `vendor/`. Nothing else changes.
 
 ## Licence
 

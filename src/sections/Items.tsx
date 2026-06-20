@@ -7,11 +7,13 @@ import {
   defineForm,
   SectionPage,
   useAppForm,
+  type SectionComponentProps,
 } from '@possibl/rcrt-app-kit/shell';
 import {
   Button,
   DataTable,
   Badge,
+  Tabs,
   EmptyState,
   SkeletonPanel,
   Modal,
@@ -22,6 +24,7 @@ import { ListChecks } from 'lucide-react';
 import { getClient } from '../lib/api-client';
 import { tenantId } from '../lib/firebase-config';
 import { Item, type ItemContent } from '../lib/schemas';
+import { seedSampleItems } from '../lib/sample-data';
 import { ItemRecord } from './ItemRecord';
 
 const anchors = {
@@ -29,6 +32,14 @@ const anchors = {
   newItem: defineAnchor({ label: 'New item button' }),
 };
 const NewItemAnchor = anchors.newItem.Anchor;
+
+// Tabs are ABSTRACT in the registry (declared on the section below). The web
+// shell maps them to `?tab=` and hands the body { tab, setTab }; the body renders
+// the <Tabs> control and filters. (Native's SectionScreen renders the tab bar
+// for you — same registry, different renderer.) Page context becomes
+// `items:open` / `items:done` automatically, so the advisor knows the filter.
+const TABS = ['all', 'open', 'done'] as const;
+type TabId = (typeof TABS)[number];
 
 // A prefillable form. `intent`/`entity`/`distinguishFrom` are structured manifest
 // fields (not free prose) so the advisor can prefill it precisely; the shell
@@ -45,12 +56,24 @@ const newItem = defineForm({
 
 type Row = Awaited<ReturnType<typeof Item.query>>[number];
 
-function ItemsBody() {
+function ItemsBody({ tab, setTab }: SectionComponentProps) {
   const navigate = useNavigate();
   const items = useCached('items:all', () => Item.query(getClient().forTenant(tenantId)));
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<{ name: string; note: string }>({ name: '', note: '' });
   const [saving, setSaving] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+
+  const active = (tab ?? 'all') as TabId;
+  const all = items.data ?? [];
+  const rows = all.filter((r) =>
+    active === 'all' ? true : active === 'done' ? r.content.status === 'done' : r.content.status !== 'done',
+  );
+  const counts = {
+    all: all.length,
+    open: all.filter((r) => r.content.status !== 'done').length,
+    done: all.filter((r) => r.content.status === 'done').length,
+  };
 
   // Consume advisor form prefills: when the advisor asks to open "items.new-item"
   // with researched values, the shell hands them here (validated to the fields).
@@ -78,6 +101,14 @@ function ItemsBody() {
     void items.refresh();
   };
 
+  const seed = async () => {
+    if (seeding) return;
+    setSeeding(true);
+    await seedSampleItems();
+    setSeeding(false);
+    void items.refresh();
+  };
+
   const columns: Column<Row>[] = [
     { key: 'name', header: 'Name', render: (r) => r.content.name, sortValue: (r) => r.content.name },
     {
@@ -86,6 +117,7 @@ function ItemsBody() {
       render: (r) => (
         <Badge tone={r.content.status === 'done' ? 'success' : 'accent'}>{r.content.status}</Badge>
       ),
+      sortValue: (r) => r.content.status,
     },
   ];
 
@@ -102,16 +134,47 @@ function ItemsBody() {
         </NewItemAnchor>
       }
     >
+      <div style={{ marginBottom: '0.75rem' }}>
+        <Tabs<TabId>
+          items={[
+            { id: 'all', label: 'All', badge: <Badge>{counts.all}</Badge> },
+            { id: 'open', label: 'Open', badge: <Badge tone="accent">{counts.open}</Badge> },
+            { id: 'done', label: 'Done', badge: <Badge tone="success">{counts.done}</Badge> },
+          ]}
+          value={active}
+          onChange={setTab}
+        />
+      </div>
+
       <anchors.list.Anchor>
         {items.data === undefined ? (
           <SkeletonPanel />
         ) : (
           <DataTable
             columns={columns}
-            rows={items.data}
+            rows={rows}
             rowKey={(r) => r.id}
             onRowClick={(r) => navigate(`/items/${r.id}`)}
-            empty={<EmptyState title="No items" hint="Create your first item." />}
+            empty={
+              all.length === 0 ? (
+                <EmptyState
+                  title="No items yet"
+                  hint="Create your first item, or load a few samples to explore the template."
+                  action={
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                      <Button size="sm" onClick={() => setOpen(true)}>
+                        New item
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => void seed()} loading={seeding}>
+                        Load sample data
+                      </Button>
+                    </div>
+                  }
+                />
+              ) : (
+                <EmptyState title={`No ${active} items`} hint="Try a different tab." />
+              )
+            }
           />
         )}
       </anchors.list.Anchor>
@@ -146,7 +209,9 @@ export const items = defineSection({
   label: 'Items',
   icon: ListChecks,
   navGroup: 'Workspace',
-  description: 'Collection of workspace items. Click a row for the full record.',
+  description: 'Collection of workspace items, filterable by All / Open / Done. Click a row for the full record.',
+  tabs: TABS,
+  defaultTab: 'all',
   component: ItemsBody,
   anchors,
   forms: { 'new-item': newItem },

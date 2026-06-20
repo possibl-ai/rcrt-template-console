@@ -11,9 +11,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@possibl/rcrt-app-kit": "file:vendor/possibl-rcrt-app-kit-0.2.0.tgz",
-    "@possibl/rcrt-sdk": "file:vendor/possibl-rcrt-sdk-0.2.0.tgz",
-    "@possibl/rcrt-ui": "file:vendor/possibl-rcrt-ui-0.2.0.tgz",
+    "@possibl/rcrt-app-kit": "file:vendor/possibl-rcrt-app-kit-0.3.0.tgz",
+    "@possibl/rcrt-sdk": "file:vendor/possibl-rcrt-sdk-0.4.0.tgz",
+    "@possibl/rcrt-ui": "file:vendor/possibl-rcrt-ui-0.3.0.tgz",
     "firebase": "^11.0.0",
     "lucide-react": "^0.563.0",
     "react": "^18.2.0",
