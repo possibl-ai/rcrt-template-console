@@ -6,6 +6,49 @@ SWR caching are all **inherited from `@possibl/rcrt-app-kit`** and **derived
 from one declaration** — the Section Registry in `src/app.config.tsx`. Your job
 is to author the app definition and the domain section components. Nothing else.
 
+## ⛔ App-kit 0.3.0 — the EXACT API (read this BEFORE writing any section)
+
+Most failed builds die at `tsc && vite build` because section code is written
+from memory (React-Query / react-table idioms) instead of this kit's real
+surface. **The single highest-leverage move: REPURPOSE the example instead of
+rewriting.** To build e.g. a Contacts/Clients console, copy `Items.tsx` →
+`Contacts.tsx` and `ItemRecord.tsx` → `ContactRecord.tsx`, move the `Item`
+schema in `lib/sample-data.ts` to your `Contact` schema (or define it in
+`schemas.ts`), and rename `Item`→`Contact` throughout. The example already uses
+every correct pattern below — renaming inherits it for free. Writing CRUD files
+from scratch is the #1 cause of build failures.
+
+If you DO author from scratch, obey this table — every left column is a real,
+observed `tsc` failure:
+
+| WRONG — does NOT exist in app-kit 0.3.0 | RIGHT |
+|---|---|
+| `import { Button, Modal, DataTable } from '@possibl/rcrt-ui'` | `... from '@possibl/rcrt-app-kit/ui'`. `@possibl/rcrt-ui` is ONLY the advisor `<Chat>` (already wired in `lib/advisor-chat.tsx`); never import UI primitives from it |
+| `defineSchema({ fields: {...} })` | `defineSchema<MyContent>({ tag: 'interpret:contact', version: 1 })` — the shape is the TS generic; `SchemaConfig` is only `{ tag, version?, extraTags? }`, there is NO `fields` |
+| `defineForm({ id, ... })` | `defineForm({ title, intent, entity, fields })` — no `id`; the key is the map key in `forms: { 'new-contact': form }` |
+| `form.open()`, `form.Trigger`, `form.Modal` | FormHandle has NO methods/components. Open via React state + `<Modal open onClose>` + `<ModalHeader>`. Read advisor prefills with `useAppForm(form)` → `{ requested, prefill, clear() }` |
+| `useCached()` with no args; `{ data, isLoading, mutate }` | `useCached(key, fetcher)` → `{ data, updatedAt, isStale, refreshing, error, refresh() }`. `data` is `undefined` until loaded; refetch with `refresh()` (no `isLoading`, no `mutate`) |
+| `client.createBreadcrumb(...)`, `client.queryBreadcrumbs(...)` | the schema handle: `Contact.create(client, { name, title, content })`, `Contact.query(client, { limit })` |
+| `Handle.get(id)`, `Handle.update(...)`, `Handle.delete(id)`, `Handle.infer` | the handle has EXACTLY `query` / `create` / `patch` / `upsertByName`. Update = `patch(client, id, partial)`; get one = `(await Handle.query(client,{limit})).find(r => r.id === id)`; delete = `client.breadcrumbs.delete(id)` |
+| `<DataTable data={} isLoading={} searchKey={} />` | `<DataTable columns={Column[]} rows={Row[]} rowKey={(r)=>r.id} onRowClick? empty? />`. Pass the already-fetched array as `rows` |
+| `Column` with `accessor` (react-table) | `Column<Row> = { key, header, render: (r)=>ReactNode, sortValue?: (r)=>string\|number, align?, className? }` |
+| `<Button icon={<Icon/>}>` | Button has no `icon` prop — put the icon in children: `<Button><Icon size={16}/> Label</Button>` |
+| `defineApp({ id, ... })`; renaming the `consoleApp` export | `export const consoleApp = defineApp({ name, version, branding, sections, advisor })` — `name` not `id`; `App.tsx` imports `{ consoleApp }`, do not rename/remove it |
+| importing `AdvisorDock` / `Spinner` from the kit | they don't exist — the advisor dock is mounted by `<RcrtApp>`; use `SkeletonPanel` for loading |
+| `import { z } from 'zod'` | zod is NOT a dependency — type content with a plain `interface ... extends Record<string, unknown>` |
+
+A record/detail page (e.g. `ItemRecord`/`ContactRecord`) is NOT a section: it is
+a plain component referenced under a parent section's
+`records: { item: { path: ':id', component: ItemRecord, chrome: false, context } }`.
+Don't wrap it in `defineSection` and don't give it a `title`.
+
+If you delete the `Item` example instead of repurposing it, you MUST also (a)
+remove `items` from `app.config.tsx` (a dangling `import './sections/Items'` is a
+`TS2307`), and (b) KEEP the `WorkspaceSettings` / `SETTINGS_NAME` /
+`WorkspaceSettingsContent` exports in `schemas.ts` — `Settings.tsx` imports them.
+
+`Items.tsx` is the canonical reference for all of the above — read it first.
+
 ## File map — TOUCH / CONFIG / LEAVE
 
 ```
@@ -33,8 +76,10 @@ vendor/*.tgz         LEAVE   the @possibl/* tarballs — the Dockerfile COPYs th
 
 ## ALWAYS
 
-- Import from `@possibl/rcrt-app-kit/{shell,core,ui}` and `@possibl/rcrt-ui`.
-  They ARE installed (vendored tarballs). Use them.
+- Import UI primitives, the registry helpers and data hooks from
+  `@possibl/rcrt-app-kit/{ui,shell,core}` (all vendored/installed). Do NOT import
+  `Button`/`Modal`/`DataTable`/etc from `@possibl/rcrt-ui` — that package is ONLY
+  the advisor `<Chat>`, already wired in `lib/advisor-chat.tsx`.
 - Persist with `defineSchema` handles (`Thing.query/.create/.patch/.upsertByName`)
   against a tenant-bound client: `getClient().forTenant(tenantId)`. The tag IS
   the table.
