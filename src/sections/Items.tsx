@@ -23,8 +23,11 @@ import {
 import { ListChecks } from 'lucide-react';
 import { getClient } from '../lib/api-client';
 import { tenantId } from '../lib/firebase-config';
-import { Item, type ItemContent } from '../lib/schemas';
-import { seedSampleItems } from '../lib/sample-data';
+// EXAMPLE SCAFFOLD — safe to delete as a unit (this file + ItemRecord.tsx +
+// lib/sample-data.ts). The `Item` schema lives in lib/sample-data.ts, so this
+// section is self-contained: repurpose it (rename Item → your entity) or delete
+// the three files together and drop `items` from app.config.tsx. See sample-data.ts.
+import { Item, seedSampleItems, clearSampleItems, type ItemContent } from '../lib/sample-data';
 import { ItemRecord } from './ItemRecord';
 
 const anchors = {
@@ -63,6 +66,7 @@ function ItemsBody({ tab, setTab }: SectionComponentProps) {
   const [draft, setDraft] = useState<{ name: string; note: string }>({ name: '', note: '' });
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   const active = (tab ?? 'all') as TabId;
   const all = items.data ?? [];
@@ -109,6 +113,14 @@ function ItemsBody({ tab, setTab }: SectionComponentProps) {
     void items.refresh();
   };
 
+  const clearSamples = async () => {
+    if (clearing) return;
+    setClearing(true);
+    await clearSampleItems(getClient().forTenant(tenantId));
+    setClearing(false);
+    void items.refresh();
+  };
+
   const columns: Column<Row>[] = [
     { key: 'name', header: 'Name', render: (r) => r.content.name, sortValue: (r) => r.content.name },
     {
@@ -127,11 +139,18 @@ function ItemsBody({ tab, setTab }: SectionComponentProps) {
       subtitle="Workspace items"
       cache={items}
       actions={
-        <NewItemAnchor as="span">
-          <Button size="sm" onClick={() => setOpen(true)}>
-            New item
-          </Button>
-        </NewItemAnchor>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {all.some((r) => r.tags?.includes('sample:seed')) && (
+            <Button size="sm" variant="secondary" onClick={() => void clearSamples()} loading={clearing}>
+              Clear samples
+            </Button>
+          )}
+          <NewItemAnchor as="span">
+            <Button size="sm" onClick={() => setOpen(true)}>
+              New item
+            </Button>
+          </NewItemAnchor>
+        </div>
       }
     >
       <div style={{ marginBottom: '0.75rem' }}>

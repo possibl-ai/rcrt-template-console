@@ -6,7 +6,6 @@ import { Settings as SettingsIcon } from 'lucide-react';
 import { getClient } from '../lib/api-client';
 import { tenantId } from '../lib/firebase-config';
 import { WorkspaceSettings, SETTINGS_NAME, type WorkspaceSettingsContent } from '../lib/schemas';
-import { clearSampleItems } from '../lib/sample-data';
 
 // Settings shows a SINGLETON breadcrumb pattern: one `interpret:app-settings`
 // row per workspace, read with useCached + `.query()[0]`, written idempotently
@@ -15,7 +14,7 @@ import { clearSampleItems } from '../lib/sample-data';
 
 const anchors = {
   prefs: defineAnchor({ label: 'Workspace preferences form' }),
-  data: defineAnchor({ label: 'Sample-data controls' }),
+  data: defineAnchor({ label: 'Workspace info' }),
 };
 
 const DEFAULTS: WorkspaceSettingsContent = { displayName: '', defaultStatus: 'open' };
@@ -25,7 +24,6 @@ function SettingsBody() {
   const settings = useCached('settings:singleton', async () => (await WorkspaceSettings.query(client))[0] ?? null);
   const [draft, setDraft] = useState<WorkspaceSettingsContent>(DEFAULTS);
   const [saving, setSaving] = useState(false);
-  const [clearing, setClearing] = useState(false);
   const [saved, setSaved] = useState(false);
 
   // Hydrate the editable draft once the cached singleton arrives.
@@ -45,13 +43,6 @@ function SettingsBody() {
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
     void settings.refresh();
-  };
-
-  const clearSamples = async () => {
-    if (clearing) return;
-    setClearing(true);
-    await clearSampleItems(client);
-    setClearing(false);
   };
 
   return (
@@ -91,13 +82,10 @@ function SettingsBody() {
 
       <anchors.data.Anchor>
         <Card>
-          <p style={{ margin: '0 0 0.75rem', color: 'var(--rcrt-muted-fg)' }}>
-            Connected to workspace <code>{tenantId}</code>. Demo rows are tagged so you can remove them
-            without touching real data.
+          <p style={{ margin: 0, color: 'var(--rcrt-muted-fg)' }}>
+            Connected to workspace <code>{tenantId}</code>. All data is stored as breadcrumbs in this
+            workspace — there is no separate database.
           </p>
-          <Button variant="secondary" size="sm" onClick={() => void clearSamples()} loading={clearing}>
-            Clear sample data
-          </Button>
         </Card>
       </anchors.data.Anchor>
     </SectionPage>
@@ -110,7 +98,7 @@ export const settings = defineSection({
   label: 'Settings',
   icon: SettingsIcon,
   navSlot: 'bottom',
-  description: 'App + workspace settings (persisted as a singleton breadcrumb), plus sample-data controls.',
+  description: 'App + workspace settings, persisted as a singleton breadcrumb.',
   component: SettingsBody,
   anchors,
 });

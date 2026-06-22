@@ -1,29 +1,15 @@
 import { defineSchema } from '@possibl/rcrt-app-kit/core';
 
-// All persistence is interpret:* tagged breadcrumbs — there is no database.
-// `defineSchema` binds a tag + content type + schema_version into one typed
-// handle (Item.query / .create / .patch / .upsertByName). Add your own domain
-// shapes here; they're the only place breadcrumb tags live.
-
-// ── Items — the example collection shape ─────────────────────────────────────
-export interface ItemContent extends Record<string, unknown> {
-  name: string;
-  status: 'open' | 'done';
-  note?: string;
-}
-
-export const Item = defineSchema<ItemContent>({
-  tag: 'interpret:item',
-  version: 1,
-});
-
-/**
- * Tag stamped onto seeded demo rows so they're easy to find and clear (see
- * `src/lib/sample-data.ts`). Real user-created rows omit it. Seeding demo data
- * with a known tag is the pattern the AI builder copies to make a generated app
- * look alive on first load.
- */
-export const SAMPLE_TAG = 'sample:seed';
+// This is where YOUR domain shapes live. All persistence is `interpret:*` tagged
+// breadcrumbs — there is no database. `defineSchema<T>({ tag, version })` binds a
+// tag + content type + schema_version into one typed handle that exposes EXACTLY
+// `.query` / `.create` / `.patch` / `.upsertByName` (+ readonly `.tag` / `.version`).
+// There is no `.delete` on a handle — delete a row with `client.breadcrumbs.delete(id)`.
+//
+// The example `Item` collection's schema deliberately lives in `./sample-data.ts`
+// (the self-contained example unit), NOT here — so adding your own schemas below
+// never orphans the example files. Add your real shapes here; repurpose or delete
+// the `Item` example as described in `./sample-data.ts`.
 
 // ── Workspace settings — a name-keyed SINGLETON breadcrumb ───────────────────
 // Not every shape is a collection. `upsertByName` gives you an idempotent

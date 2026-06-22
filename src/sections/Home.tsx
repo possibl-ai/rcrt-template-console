@@ -7,8 +7,10 @@ import { LayoutDashboard, Sparkles, CheckCircle2, Circle } from 'lucide-react';
 import { defineSection, defineAnchor } from '@possibl/rcrt-app-kit/shell';
 import { getClient } from '../lib/api-client';
 import { tenantId } from '../lib/firebase-config';
-import { Item } from '../lib/schemas';
-import { seedSampleItems } from '../lib/sample-data';
+// NOTE: this dashboard reads the EXAMPLE `Item` collection (defined in
+// lib/sample-data.ts). If you delete the Item example, replace the item KPIs /
+// recent-items list below with your own data (or repurpose Item → your entity).
+import { Item, seedSampleItems } from '../lib/sample-data';
 
 // A section is a DOMAIN COMPONENT slotted into the registry. The shell renders
 // the header/refresh/UpdatedAgo chrome (SectionPage cache=…); you write only

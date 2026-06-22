@@ -3,7 +3,9 @@ import { defineAnchor, type RecordComponentProps } from '@possibl/rcrt-app-kit/s
 import { Card, Button, Badge, SkeletonPanel, EmptyState } from '@possibl/rcrt-app-kit/ui';
 import { getClient } from '../lib/api-client';
 import { tenantId } from '../lib/firebase-config';
-import { Item } from '../lib/schemas';
+// EXAMPLE SCAFFOLD — part of the deletable `Item` example unit (Items.tsx +
+// this file + lib/sample-data.ts). The schema lives in lib/sample-data.ts.
+import { Item } from '../lib/sample-data';
 
 // A RECORD ROUTE component (chrome:false → full-bleed: no shell header/nav rail;
 // it renders its own header). `close()` navigates back to the parent section.
