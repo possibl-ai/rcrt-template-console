@@ -1,0 +1,21 @@
+# Hygiene guardrail for human edits to generated repos.
+# The RCRT platform deploys via a direct deploy step and never depends on this workflow.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      # SDK deps are vendored as file:vendor/*.tgz and committed, so npm ci works offline-of-registry for them.
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run build
