@@ -146,13 +146,13 @@ from `vendor/*.tgz` (`file:` deps) until they are published to npm. The
 resolve in Cloud Build (skipping this caused a deploy failure in the dogfood
 console — see its commit `67ecc42`).
 
-Current vendored versions: `@possibl/rcrt-app-kit@0.3.0`, `@possibl/rcrt-sdk@0.4.0`,
-`@possibl/rcrt-ui@0.3.0` (aligned with the native template, which shares app-kit
-0.3.0 + sdk 0.4.0).
+Current vendored versions: `@possibl/rcrt-app-kit@0.4.0`, `@possibl/rcrt-sdk@0.5.0`,
+`@possibl/rcrt-ui@0.4.0` (aligned with the native template, which shares the same
+app-kit + sdk).
 
 **Once the packages are published**, in `package.json` replace each
 `file:vendor/...tgz` with a registry semver range (e.g.
-`"@possibl/rcrt-app-kit": "^0.3.0"`) and delete `vendor/`. Nothing else changes.
+`"@possibl/rcrt-app-kit": "^0.4.0"`) and delete `vendor/`. Nothing else changes.
 
 ## Licence
 

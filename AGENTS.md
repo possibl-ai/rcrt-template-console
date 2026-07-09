@@ -6,7 +6,7 @@ SWR caching are all **inherited from `@possibl/rcrt-app-kit`** and **derived
 from one declaration** — the Section Registry in `src/app.config.tsx`. Your job
 is to author the app definition and the domain section components. Nothing else.
 
-## ⛔ App-kit 0.3.0 — the EXACT API (read this BEFORE writing any section)
+## ⛔ App-kit 0.4.0 — the EXACT API (read this BEFORE writing any section)
 
 Most failed builds die at `tsc && vite build` because section code is written
 from memory (React-Query / react-table idioms) instead of this kit's real
@@ -21,7 +21,7 @@ from scratch is the #1 cause of build failures.
 If you DO author from scratch, obey this table — every left column is a real,
 observed `tsc` failure:
 
-| WRONG — does NOT exist in app-kit 0.3.0 | RIGHT |
+| WRONG — does NOT exist in app-kit 0.4.0 | RIGHT |
 |---|---|
 | `import { Button, Modal, DataTable } from '@possibl/rcrt-ui'` | `... from '@possibl/rcrt-app-kit/ui'`. `@possibl/rcrt-ui` is ONLY the advisor `<Chat>` (already wired in `lib/advisor-chat.tsx`); never import UI primitives from it |
 | `defineSchema({ fields: {...} })` | `defineSchema<MyContent>({ tag: 'interpret:contact', version: 1 })` — the shape is the TS generic; `SchemaConfig` is only `{ tag, version?, extraTags? }`, there is NO `fields` |
