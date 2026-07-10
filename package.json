@@ -12,7 +12,7 @@
   "dependencies": {
     "@possibl/rcrt-app-kit": "^0.5.1",
     "@possibl/rcrt-sdk": "^0.5.1",
-    "@possibl/rcrt-ui": "^0.4.0",
+    "@possibl/rcrt-ui": "^0.5.0",
     "firebase": "^11.0.0",
     "lucide-react": "^0.563.0",
     "react": "^18.2.0",
