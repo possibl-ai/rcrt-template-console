@@ -47,9 +47,12 @@ export default {
         success: 'hsl(var(--success))',
         warning: 'hsl(var(--warning))',
       },
+      // Token-driven so theme packs restyle fonts by overriding --rcrt-* in
+      // src/index.css (no tailwind config fork needed).
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['SF Mono', 'Menlo', 'monospace'],
+        sans: ['var(--rcrt-font)'],
+        display: ['var(--rcrt-font-display)'],
+        mono: ['var(--rcrt-mono)'],
       },
       borderRadius: {
         lg: 'var(--radius)',
