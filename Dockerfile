@@ -1,19 +1,16 @@
 # Multi-stage build: Vite app → static nginx host.
 #
 # Self-contained: no monorepo coupling. @possibl/rcrt-sdk,
-# @possibl/rcrt-app-kit and @possibl/rcrt-ui are installed from vendored
-# tarballs in vendor/ (file: deps) until they're published to npm — so the
-# vendor dir MUST be copied before `npm install` resolves them. (Skipping
-# this caused a Cloud Build failure in the dogfood console; see its commit
-# 67ecc42.) Once the packages are published, switch package.json to registry
-# versions and this Dockerfile keeps working (the vendor copy is then a no-op).
+# @possibl/rcrt-app-kit and @possibl/rcrt-ui install from the npm registry
+# (package.json pins registry versions since 0.5.x — the old vendored-tarball
+# COPY was removed because the vendor/ dir no longer exists and a COPY of a
+# missing dir fails the whole Docker build).
 
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-COPY vendor ./vendor
 
 RUN npm install --ignore-scripts
 
