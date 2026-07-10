@@ -50,7 +50,17 @@
     --rcrt-accent-fg: hsl(0 0% 100%);
     --rcrt-accent-2: hsl(263 70% 63%);
     --rcrt-gradient: linear-gradient(135deg, hsl(243 75% 59%), hsl(263 70% 63%));
+    --rcrt-ring: hsl(243 75% 59%);
+    --rcrt-success: hsl(142 71% 45%);
+    --rcrt-warning: hsl(38 92% 50%);
+    --rcrt-destructive: hsl(0 72% 51%);
+    --rcrt-info: hsl(199 89% 48%);
     --rcrt-radius: 0.7rem;
+    --rcrt-radius-sm: 0.5rem;
+    /* Keep the kit shell on the same face as the body (index.html loads it). */
+    --rcrt-font: 'Inter', system-ui, sans-serif;
+    --rcrt-font-display: 'Inter', system-ui, sans-serif;
+    --rcrt-mono: ui-monospace, 'SF Mono', Menlo, monospace;
   }
 
   /* Minimal text input matched to the kit tokens (the kit ships no form input
